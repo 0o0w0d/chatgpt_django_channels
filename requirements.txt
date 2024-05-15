@@ -1,0 +1,26 @@
+#coding: utf-8
+
+# django web framework
+django~=4.2.0
+
+# environment variable
+python-dotenv==1.0.0
+
+# environment variable ( django 친화적인 기능 추가 지원 )
+django-environ==0.10.0
+
+# Use openai api
+openai==0.27.7
+
+# Bootstrap 5 for Django
+django-bootstrap5==23.1
+
+# HTTP request / HTML Parser
+requests
+beautifulsoup4
+
+# django channels
+channels[daphne]~=4.0.0
+
+# Google Translate's text-to-speech APIBootstrap 5 for Django
+gTTS==2.3.2
