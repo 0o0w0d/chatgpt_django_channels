@@ -13,4 +13,9 @@ urlpatterns = [
         views.RolePlayingRoomUpdateView.as_view(),
         name="role_playing_room_update",
     ),
+    path(
+        "<int:pk>/",
+        views.RolePlayingRoomDetailView.as_view(),
+        name="role_playing_room_detail",
+    ),
 ]

@@ -3,7 +3,7 @@ from django.db.models.query import QuerySet
 from django.forms import BaseModelForm
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.generic import CreateView, UpdateView, ListView
+from django.views.generic import CreateView, UpdateView, ListView, DetailView
 from .models import RolePlayingRoom
 from .forms import RolePlayingRoomForm
 from django.utils.decorators import method_decorator
@@ -36,6 +36,16 @@ class RolePlayingRoomUpdateView(UpdateView):
 
 @method_decorator(staff_member_required, name="dispatch")
 class RolePlayingRoomListView(ListView):
+    model = RolePlayingRoom
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.filter(user=self.request.user)
+        return qs
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class RolePlayingRoomDetailView(DetailView):
     model = RolePlayingRoom
 
     def get_queryset(self):
