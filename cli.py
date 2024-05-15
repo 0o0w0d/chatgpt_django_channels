@@ -40,12 +40,19 @@ USER_PROMPT = (
     f"as much as possible. Now, start a conversation with the first sentence!"
 )
 
+RECOMMEND_PROMPT = (
+    f"Can you please provide me an {level_word} example "
+    f"of how to respond to the last sentence "
+    f"in this situation, without providing a translation "
+    f"and any introductory phrases or sentences."
+)
+
 messages = [
     {"role": "system", "content": SYSTEM_PROMPT},
 ]
 
 
-def gpt_query(user_query: str) -> str:
+def gpt_query(user_query: str, skip_save: bool = False) -> str:
     """
     유저 메시지에 대해 gpt의 응답을 반환
     """
@@ -55,7 +62,9 @@ def gpt_query(user_query: str) -> str:
     messages.append({"role": "user", "content": user_query})
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
     assistant_msg = response["choices"][0]["message"]["content"]
-    messages.append({"role": "assistant", "content": assistant_msg})
+
+    if skip_save is False:
+        messages.append({"role": "assistant", "content": assistant_msg})
 
     return assistant_msg
 
@@ -93,12 +102,25 @@ def say(message: str, lang: str) -> None:
 
 
 def main():
+
     # gpt로부터 초기 응답을 얻기 위한 코드
     assistant_msg = gpt_query(USER_PROMPT)
     print(f"[assistant] {assistant_msg}")
 
+    """
+        !recommend: 표현 추천
+        !say: 메시지 음성으로 읽어주기
+    """
+
     while line := input("[user] ").strip():
-        if line == "!say":
+
+        if line == "!recommend":
+            # !recommand의 경우 GPT 응답을 messages에 저장하지 않기 위해 skip_save=True 적용
+            recommend_msg = gpt_query(RECOMMEND_PROMPT, skip_save=True)
+            print("추천 표현: ", recommend_msg)
+            pass
+
+        elif line == "!say":
             say(messages[-1]["content"], "en")
         else:
             response = gpt_query(line)
