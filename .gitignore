@@ -1,2 +1,2 @@
 venv
-test_openai_api.py
+.env
