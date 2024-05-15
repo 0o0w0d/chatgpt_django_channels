@@ -1,0 +1,35 @@
+{% extends "chat/base.html" %}
+{% block content %}
+<table class="table table-hover table-bordered">
+  <thead>
+    <tr>
+      <th>언어</th>
+      <th>레벨</th>
+      <th>상황</th>
+      <th>내 역할</th>
+      <th>GPT 역할</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for room in object_list %}
+      <tr>
+        <td>{{ room.get_language_display }}</td>
+        <td>{{ room.get_level_display }}</td>
+        <td>
+          <a href="">{{ room.situation }}</a>
+          </td>
+        <td>{{ room.my_role }}</td>
+        <td>{{ room.gpt_role }}</td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="S">Empty</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock content %}
+
+
+

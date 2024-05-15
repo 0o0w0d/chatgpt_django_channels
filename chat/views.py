@@ -3,7 +3,7 @@ from django.db.models.query import QuerySet
 from django.forms import BaseModelForm
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, ListView
 from .models import RolePlayingRoom
 from .forms import RolePlayingRoomForm
 from django.utils.decorators import method_decorator
@@ -29,6 +29,16 @@ class RolePlayingRoomUpdateView(UpdateView):
 
     # 본인이 생성한 채팅방만 조회 가능하도록
     def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset()
+        qs = qs.filter(user=self.request.user)
+        return qs
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class RolePlayingRoomListView(ListView):
+    model = RolePlayingRoom
+
+    def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.filter(user=self.request.user)
         return qs

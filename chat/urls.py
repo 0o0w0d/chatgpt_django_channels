@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("", views.RolePlayingRoomListView.as_view(), name="role_playing_room_list"),
     path(
         "room-create/",
         views.RolePlayingRoomCreateView.as_view(),
