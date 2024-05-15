@@ -2,6 +2,10 @@ import os
 import openai
 
 from dotenv import load_dotenv
+from gtts import gTTS
+from io import BytesIO
+from tempfile import NamedTemporaryFile
+import pygame
 
 load_dotenv()
 
@@ -56,14 +60,49 @@ def gpt_query(user_query: str) -> str:
     return assistant_msg
 
 
+# 지정 경로의 오디오 파일을 재생하기 위한 함수
+def play_file(file_path: str) -> None:
+    pygame.mixer.init()
+    pygame.mixer.music.load(file_path)
+    pygame.mixer.music.play()
+
+    # audio가 재생되는 동안 기다리기
+    while pygame.mixer.music.get_busy():
+        pass
+
+    pygame.mixer.quit()
+
+
+# 음성으로 메시지를 읽어주는 코드
+def say(message: str, lang: str) -> None:
+
+    # 메모리 객체에 저장하기 위해서 BytesIO 사용
+    io = BytesIO()
+    # write_to_fp : 인자로 지정한 파일 객체에 음성 파일 저장
+    gTTS(message, lang=lang).write_to_fp(io)
+
+    # 임시 파일 생성
+    with NamedTemporaryFile(
+        delete=False
+    ) as f:  # 자동 삭제되지 않도록 delete=False 지정
+        f.write(io.getvalue())
+        f.close()
+
+        play_file(f.name)
+        os.remove(f.name)
+
+
 def main():
     # gpt로부터 초기 응답을 얻기 위한 코드
     assistant_msg = gpt_query(USER_PROMPT)
     print(f"[assistant] {assistant_msg}")
 
     while line := input("[user] ").strip():
-        response = gpt_query(line)
-        print(f"[assistant] {response}")
+        if line == "!say":
+            say(messages[-1]["content"], "en")
+        else:
+            response = gpt_query(line)
+            print(f"[assistant] {response}")
 
 
 if __name__ == "__main__":

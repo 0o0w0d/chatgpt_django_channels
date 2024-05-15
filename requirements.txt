@@ -24,3 +24,5 @@ channels[daphne]~=4.0.0
 
 # Google Translate's text-to-speech APIBootstrap 5 for Django
 gTTS==2.3.2
+
+pygame==2.5.2
