@@ -106,6 +106,7 @@ def main():
     # gpt로부터 초기 응답을 얻기 위한 코드
     assistant_msg = gpt_query(USER_PROMPT)
     print(f"[assistant] {assistant_msg}")
+    say(assistant_msg, "en")
 
     """
         !recommend: 표현 추천
@@ -118,13 +119,13 @@ def main():
             # !recommand의 경우 GPT 응답을 messages에 저장하지 않기 위해 skip_save=True 적용
             recommend_msg = gpt_query(RECOMMEND_PROMPT, skip_save=True)
             print("추천 표현: ", recommend_msg)
-            pass
 
         elif line == "!say":
             say(messages[-1]["content"], "en")
         else:
             response = gpt_query(line)
             print(f"[assistant] {response}")
+            say(response, "en")
 
 
 if __name__ == "__main__":
