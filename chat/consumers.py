@@ -20,6 +20,7 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.gpt_msgs: List[GptMessage] = []
+        self.recommend_msg = ""
 
     def connect(self):
         room = self.get_room()
@@ -29,6 +30,7 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
             self.accept()
 
             self.gpt_msgs = room.get_initial_messages()
+            self.recommend_msg = room.get_recommend_message()
 
             assistant_msg = self.gpt_query()
             # 초기 프롬프트가 적용된 gpt 응답 전달
@@ -39,6 +41,10 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
         if content["type"] == "user-msg":
             assistant_msg = self.gpt_query(user_query=content["message"])
             self.send_json({"type": "assistant-msg", "message": assistant_msg})
+        elif content["type"] == "request-recommend-msg":
+            recommend_msg = self.gpt_query(command_query=self.recommend_msg)
+            self.send_json({"type": "recommended-msg", "message": recommend_msg})
+
         # 그 외의 타입일 경우 invalid type message
         else:
             self.send_json(
