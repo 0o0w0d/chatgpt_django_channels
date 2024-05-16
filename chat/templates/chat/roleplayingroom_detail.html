@@ -42,13 +42,6 @@
         </div>
         <div class="card-body">
           <ul id="chat-message-list">
-            {# FIXME: 샘플 채팅 메세지 #}
-            <li class="chat-message">
-              <span class="message">Good morning, welcome to Starbucks! What can I get for you today?
-              </span>
-            </li>
-            <li class="chat-message me">
-              <span class="message">Yes, I would like a grande Americano with an extra shot of expresso and a splash of almond milk, please.</span></li>
           </ul>
         </div>
         <div class="card-footer">
@@ -70,6 +63,23 @@
   {# room-pk 라는 id 이름으로 주어진 데이터를 JSON 형식으로 변환하여 <script> 태그에 삽입 #}
   {{ roleplayingroom.pk|json_script:"room-pk" }}
   <script>
+    /* XSS 공격 방지를 위해서
+    const addMessage = (msg, isMe) => {
+      const msgList = document.querySelector('#chat-message-list')
+      msgList.insertAdjacentHTML('beforeend', `<li class="chat-message ${isMe ? ' me' : ''}"><span class="message">${msg}</span>`)
+      msgList.scrollTop = msgList.scrollHeight
+    }
+    */
+
+    function addMessage(message, isMe) {
+      const messageList = document.getElementById("chat-message-list");
+      const messageElement = document.createElement("li");
+      messageElement.className = "chat-message" + (isMe ? " me" : "");
+      messageElement.innerHTML = `<span class="message">${message}</span>`;
+      messageList.appendChild(messageElement);
+      messageList.scrollTop = messageList.scrollHeight;
+  }
+    
     const room_pk = document.querySelector('#room-pk').textContent
     
     // websocket 객체 생성
@@ -88,6 +98,7 @@
       console.group('[onmessage]')
       const msg_obj = JSON.parse(e.data)
       const { message } = msg_obj
+      addMessage(message, false)
       console.log('assistant-msg :', message)
       console.groupEnd()
     }
@@ -98,6 +109,7 @@
       const msg = e.target.message.value.trim()
       if (msg.length > 0) {
         ws.send(JSON.stringify({ type: "user-msg", message: msg }))
+        addMessage(msg, true)
         e.target.reset()
       }
       
