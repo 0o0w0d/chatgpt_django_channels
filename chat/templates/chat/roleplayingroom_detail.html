@@ -66,3 +66,41 @@
     <a href="{% url 'role_playing_room_delete' roleplayingroom.pk %}" class="btn btn-danger">삭제</a>
   </div>
 {% endblock %}
+{% block script %}
+  {# room-pk 라는 id 이름으로 주어진 데이터를 JSON 형식으로 변환하여 <script> 태그에 삽입 #}
+  {{ roleplayingroom.pk|json_script:"room-pk" }}
+  <script>
+    const room_pk = document.querySelector('#room-pk').textContent
+    
+    // websocket 객체 생성
+    const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${room_pk}/`)
+
+    ws.onopen = function(e) {
+      console.log('django channels connected.')
+    }
+    ws.onclose = function(e) {
+      console.log('django channels disconnected.')
+    }
+    ws.onerror = function(e) {
+      console.error('django channels raise error.')
+    }
+    ws.onmessage = function(e) {
+      console.group('[onmessage]')
+      console.log(typeof e.data)
+      console.log(e.data)
+      console.groupEnd()
+    }
+
+    const messageForm = document.querySelector('#message-form')
+    messageForm.onsubmit = function(e) {
+      e.preventDefault()
+      const msg = e.target.message.value.trim()
+      if (msg.length > 0) {
+        ws.send(JSON.stringify({ message: msg }))
+        e.target.reset()
+      }
+      
+    }
+  </script>
+
+{% endblock script %}
