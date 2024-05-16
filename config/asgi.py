@@ -13,6 +13,8 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
 from channels.security.websocket import AllowedHostsOriginValidator
+
+# websocket에 쿠키, 세션, 인증 등을 추가
 from channels.auth import AuthMiddlewareStack
 
 
@@ -28,6 +30,6 @@ from chat.routing import websocket_urlpatterns
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
-        "websocket": URLRouter(websocket_urlpatterns),
+        "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
     }
 )
