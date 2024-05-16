@@ -1,5 +1,7 @@
 from typing import List
 
+import openai
+
 from channels.generic.websocket import JsonWebsocketConsumer
 from .models import RolePlayingRoom, GptMessage
 
@@ -17,7 +19,7 @@ URL Captured Value    self.scope['url_route']
 class RolePlayingRoomConsumer(JsonWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.gpt_msg: List[GptMessage] = []
+        self.gpt_msgs: List[GptMessage] = []
 
     def connect(self):
         room = self.get_room()
@@ -26,13 +28,13 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
         else:
             self.accept()
 
-            self.gpt_msg = room.get_initial_messages()
-            print(self.gpt_msg)
+            self.gpt_msgs = room.get_initial_messages()
 
-    def receive_json(self, content, **kwargs):
-        print("received:", content)
-        # json 역직렬화
-        # Echo
+            assistant_msg = self.gpt_query()
+            print(f"[assistant]: {assistant_msg}")
+            self.send_json({"type": "assistant-msg", "message": assistant_msg})
+
+    def receive_json(self, content: dict, **kwargs):
         self.send_json(content)
 
     def get_room(self):
@@ -47,3 +49,34 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
                 pass
 
         return room
+
+    # user 메시지에 대한 gpt 응답을 반환하는 메소드
+    def gpt_query(self, command_query: str = None, user_query: str = None) -> str:
+        """
+        user_query: 사용자의 대화 메시지
+        command_query: 표현 추천 등의 요청
+        두 인자는 배타적 관계
+        """
+
+        # user가 보낸 메시지
+        if command_query is not None and user_query is not None:
+            raise ValueError("Can't use command_query, user_query together")
+        elif command_query is not None:  # command_query 값이 있으면
+            self.gpt_msgs.append(GptMessage(role="user", content=command_query))
+        elif user_query is not None:  # user_query 값이 있으면
+            self.gpt_msgs.append(GptMessage(role="user", content=user_query))
+
+        # gpt 응답 생성
+        response_dict = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo", messages=self.gpt_msgs, temperature=1
+        )
+        response_role = response_dict["choices"][0]["message"]["role"]
+        response_content = response_dict["choices"][0]["message"]["content"]
+
+        # gpt가 보낸 메시지
+        if command_query is None:
+            # websocket이 연결되있는 동안, command_query가 아닐 경우 대화내역 저장
+            gpt_msg = GptMessage(role=response_role, content=response_content)
+            self.gpt_msgs.append(gpt_msg)
+
+        return response_content

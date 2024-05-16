@@ -86,7 +86,6 @@
     }
     ws.onmessage = function(e) {
       console.group('[onmessage]')
-      console.log(typeof e.data)
       console.log(e.data)
       console.groupEnd()
     }
@@ -96,7 +95,7 @@
       e.preventDefault()
       const msg = e.target.message.value.trim()
       if (msg.length > 0) {
-        ws.send(JSON.stringify({ message: msg }))
+        ws.send(JSON.stringify({ "type": "user-msg", "message": msg }))
         e.target.reset()
       }
       
