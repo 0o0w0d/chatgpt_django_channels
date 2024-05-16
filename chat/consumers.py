@@ -31,11 +31,19 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
             self.gpt_msgs = room.get_initial_messages()
 
             assistant_msg = self.gpt_query()
-            print(f"[assistant]: {assistant_msg}")
+            # 초기 프롬프트가 적용된 gpt 응답 전달
             self.send_json({"type": "assistant-msg", "message": assistant_msg})
 
     def receive_json(self, content: dict, **kwargs):
-        self.send_json(content)
+        # user-msg 타입으로 json 파일을 받으면, assistant-msg 타입으로 gpt response 전달
+        if content["type"] == "user-msg":
+            assistant_msg = self.gpt_query(user_query=content["message"])
+            self.send_json({"type": "assistant-msg", "message": assistant_msg})
+        # 그 외의 타입일 경우 invalid type message
+        else:
+            self.send_json(
+                {"type": "error", "message": f"Invalid type: {content['type']}"}
+            )
 
     def get_room(self):
         user = self.scope["user"]
@@ -75,7 +83,7 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
 
         # gpt가 보낸 메시지
         if command_query is None:
-            # websocket이 연결되있는 동안, command_query가 아닐 경우 대화내역 저장
+            # websocket이 연결되어 있는 동안, command_query가 아닐 경우 대화내역 저장
             gpt_msg = GptMessage(role=response_role, content=response_content)
             self.gpt_msgs.append(gpt_msg)
 
