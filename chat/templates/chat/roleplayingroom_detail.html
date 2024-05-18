@@ -55,7 +55,7 @@
         </div>
         <div class="card-footer">
           <div class="d-grid gap-2 mb-2"><button class="btn btn-primary" id="auto-play-btn">자동 읽기 시작</button></div>
-          <select id="voice-list" class="form-select mb-2"></select>
+          {# <select id="voice-list" class="form-select mb-2"></select> #}
           <div class="d-flex gap-2">
             <button class="btn btn-secondary" id="recommend-btn">추천받기</button>
             <form id="message-form" class="d-flex gap-1 flex-grow-1">
@@ -84,7 +84,7 @@
     }
     */
 
-    function sayMessage(message) {
+    {% comment %} function sayMessage(message) {
       const voiceListSelect = document.querySelector("#voice-list");
       const voiceName = voiceListSelect.options[voiceListSelect.selectedIndex].value;
       const voice = window.speechSynthesis.getVoices()
@@ -99,7 +99,15 @@
       });
     
       window.speechSynthesis.speak(utterance);
-    }
+    } {% endcomment %}
+
+    function sayMessage(message, language) {
+      const lang = language.split("-")[0];  // en-US => en
+      const voiceUrl = `/chat/voice/?message=${encodeURIComponent(message)}&lang=${lang}`;
+      const audio = new Audio();
+      audio.src = voiceUrl;
+      audio.play();
+  }
 
     function addMessage(message, isMe) {
       const messageList = document.getElementById("chat-message-list");
@@ -111,13 +119,14 @@
       messageList.scrollTop = messageList.scrollHeight;
 
       messageElement.querySelector(".say").addEventListener("click", () => {
-        sayMessage(message);
+        sayMessage(message, room_lang);
       });
   }
 
 
     let is_auto_play = false
     const room_pk = document.querySelector('#room-pk').textContent
+    const room_lang = JSON.parse(document.querySelector('#room-lang').textContent)
     
     // websocket 객체 생성
     const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${room_pk}/`)
@@ -138,7 +147,7 @@
         const { message } = msg_obj
         addMessage(message, false)
         if (is_auto_play == true) {
-          sayMessage(message)
+          sayMessage(message, room_lang)
         }
         
       } else if (msg_obj.type == "recommended-msg") {
@@ -177,6 +186,7 @@
       autoPlayBtn.remove()
     })
   </script>
+  {% comment %}  
   <script>
     const room_lang = JSON.parse(document.querySelector('#room-lang').textContent)
     
@@ -195,5 +205,6 @@
     }
 
   </script>
+  {% endcomment %}
 
 {% endblock script %}

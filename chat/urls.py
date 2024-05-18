@@ -23,4 +23,5 @@ urlpatterns = [
         views.RolePlayingRoomDeleteView.as_view(),
         name="role_playing_room_delete",
     ),
+    path("voice/", views.make_voice, name="make_voice"),
 ]

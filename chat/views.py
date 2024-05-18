@@ -17,6 +17,7 @@ from .models import RolePlayingRoom
 from .forms import RolePlayingRoomForm
 from django.utils.decorators import method_decorator
 from django.contrib.admin.views.decorators import staff_member_required
+from gtts import gTTS
 
 
 # staff member만 접근 가능하도록
@@ -78,3 +79,15 @@ class RolePlayingRoomDeleteView(DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, "채팅방을 삭제했습니다.")
         return response
+
+
+@staff_member_required
+def make_voice(request):
+    lang = request.GET.get("lang", "en")
+    message = request.GET.get("message")
+
+    response = HttpResponse()
+    gTTS(message, lang=lang).write_to_fp(response)
+    response["Content-Type"] = "audio/mpeg"
+
+    return response
