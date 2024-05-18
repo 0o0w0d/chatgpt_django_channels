@@ -45,6 +45,7 @@
           </ul>
         </div>
         <div class="card-footer">
+          <select id="voice-list" class="form-select mb-2"></select>
           <div class="d-flex gap-2">
             <button class="btn btn-secondary" id="recommend-btn">추천받기</button>
             <form id="message-form" class="d-flex gap-1 flex-grow-1">
@@ -63,6 +64,7 @@
 {% block script %}
   {# room-pk 라는 id 이름으로 주어진 데이터를 JSON 형식으로 변환하여 <script> 태그에 삽입 #}
   {{ roleplayingroom.pk|json_script:"room-pk" }}
+  {{ roleplayingroom.language|json_script:"room-lang" }}
   <script>
     /* XSS 공격 방지를 위해서
     const addMessage = (msg, isMe) => {
@@ -131,6 +133,24 @@
       recommendBtn.disabled = true
       ws.send(JSON.stringify({ type: "request-recommend-msg" }))
     })
+  </script>
+  <script>
+    const room_lang = JSON.parse(document.querySelector('#room-lang').textContent)
+    
+    window.speechSynthesis.onvoiceschanged = function () {
+      const voices = window.speechSynthesis.getVoices()
+
+      voices.forEach(({name, lang}) => {
+        if (lang.toLowerCase() === room_lang.toLowerCase()) {
+          const option = document.createElement('option')
+          option.value = name
+          option.textContent = name
+          option.selected = true // 마지막 음성 선택
+          document.querySelector('#voice-list').appendChild(option)
+        }
+      })
+    }
+
   </script>
 
 {% endblock script %}
