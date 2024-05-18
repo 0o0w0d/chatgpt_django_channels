@@ -10,7 +10,7 @@ import pygame
 load_dotenv()
 
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 # 상황극 설정
@@ -60,8 +60,8 @@ def gpt_query(user_query: str, skip_save: bool = False) -> str:
     global messages
 
     messages.append({"role": "user", "content": user_query})
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
-    assistant_msg = response["choices"][0]["message"]["content"]
+    response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
+    assistant_msg = response.choices[0].message.content
 
     if skip_save is False:
         messages.append({"role": "assistant", "content": assistant_msg})

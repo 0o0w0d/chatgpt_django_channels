@@ -6,10 +6,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# openai.api_key = os.getenv("OPENAI_API_KEY")
 
-response = openai.Completion.create(
-    engine="gpt-3.5-turbo-instruct",
+response = client.completions.create(
+    model="gpt-3.5-turbo-instruct",
     prompt="""
     Fix grammar errors:
     - I is a boy
@@ -23,7 +24,7 @@ print("응답 ::", response.choices[0].text.strip())
 print("--------------------------------")
 
 
-response = openai.ChatCompletion.create(
+response = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "system", "content": "당신은 지식이 풍부한 도우미입니다."},
@@ -33,4 +34,4 @@ response = openai.ChatCompletion.create(
 
 print("test #2")
 print(response)
-print("응답 ::", response["choices"][0]["message"]["content"])
+print("응답 ::", response.choices[0].message.content)

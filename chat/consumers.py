@@ -1,6 +1,8 @@
 from typing import List
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 from channels.generic.websocket import JsonWebsocketConsumer
 from .models import RolePlayingRoom, GptMessage
@@ -81,11 +83,11 @@ class RolePlayingRoomConsumer(JsonWebsocketConsumer):
             self.gpt_msgs.append(GptMessage(role="user", content=user_query))
 
         # gpt 응답 생성
-        response_dict = openai.ChatCompletion.create(
+        response_dict = client.chat.completions.create(
             model="gpt-3.5-turbo", messages=self.gpt_msgs, temperature=1
         )
-        response_role = response_dict["choices"][0]["message"]["role"]
-        response_content = response_dict["choices"][0]["message"]["content"]
+        response_role = response_dict.choices[0].message.role
+        response_content = response_dict.choices[0].message.content
 
         # gpt가 보낸 메시지
         if command_query is None:
