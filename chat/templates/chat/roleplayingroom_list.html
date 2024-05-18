@@ -16,7 +16,7 @@
           <td>{{ room.get_language_display }}</td>
           <td>{{ room.get_level_display }}</td>
           <td>
-            <a href="{% url 'role_playing_room_detail' room.id %}">{{ room.situation }}</a>
+            <a href="{{ room.get_absolute_url }}">{{ room.situation }}</a>
           </td>
           <td>{{ room.my_role }}</td>
           <td>{{ room.gpt_role }}</td>

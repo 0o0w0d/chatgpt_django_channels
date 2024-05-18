@@ -3,6 +3,8 @@ from typing import List, TypedDict, Literal
 from django.db import models
 from django.conf import settings
 
+from django.urls import reverse_lazy
+
 
 class GptMessage(TypedDict):
     # role의 값은 "system", "user", "assistant"만
@@ -62,6 +64,9 @@ class RolePlayingRoom(models.Model):
 
     class Meta:
         ordering = ["-pk"]
+
+    def get_absolute_url(self):
+        return reverse_lazy("role_playing_room_detail", kwargs={"pk": self.pk})
 
     def get_initial_messages(self) -> List[GptMessage]:
         gpt_name = "RolePlayingBot"
